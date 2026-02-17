@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'dos-lab-dashboards'
+    orgId: 1
+    folder: 'DoS Lab'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
