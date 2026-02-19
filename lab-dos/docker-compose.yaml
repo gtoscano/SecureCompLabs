@@ -19,7 +19,8 @@ services:
     image: nicolaka/netshoot
     container_name: dos_monitor
     entrypoint: ["sh", "-c", "while true; do sleep 3600; done"]
-    networks:
-      - dosnet
+    networks: "service:target"
+    depend_on:
+      - target
 networks:
-  dosnet:
+  dosnet: {}

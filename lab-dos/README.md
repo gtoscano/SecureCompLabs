@@ -1,4 +1,4 @@
-# ✅ Lab DoS Symptoms + Monitoring + Mitigation (Docker)
+# ✅ Lab DoS Symptoms + MonitorinG
 
 * Establish a **baseline**
 * Generate **controlled stress** (HTTP load test)
