@@ -1,0 +1,41 @@
+services:
+  snort:
+    build: .
+    container_name: snort-lab
+    restart: unless-stopped
+    environment:
+      SNORT_MODE: ${SNORT_MODE:-pcap}
+      SNORT_INTERFACE: ${SNORT_INTERFACE:-eth0}
+      SNORT_PCAP: ${SNORT_PCAP:-sample.pcap}
+      SNORT_CONF: /etc/snort/snort.conf
+      SNORT_RULES: /etc/snort/rules/local.rules
+      SNORT_LOG_DIR: /lab/logs
+    volumes:
+      - ./snort.conf:/etc/snort/snort.conf:ro
+      - ./rules/local.rules:/etc/snort/rules/local.rules:ro
+      - ./pcaps:/lab/pcaps:ro
+      - ./logs:/lab/logs
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+
+  snort-viewer:
+    build: ./viewer
+    container_name: snort-viewer
+    restart: unless-stopped
+    depends_on:
+      - snort
+    environment:
+      ALERT_FILE: /logs/alert
+      LOG_VIEW_TOKEN: ${LOG_VIEW_TOKEN:-change-this-token}
+      MAX_ROWS: ${MAX_ROWS:-250}
+    volumes:
+      - ./logs:/logs:ro
+    ports:
+      - "8082:8082"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

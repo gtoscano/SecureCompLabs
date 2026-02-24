@@ -1,0 +1,20 @@
+services:
+  web-honeypot:
+    build: .
+    container_name: web-honeypot
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      LOG_VIEW_TOKEN: ${LOG_VIEW_TOKEN:-class-demo-token}
+      MAX_LOG_ROWS: ${MAX_LOG_ROWS:-200}
+      DB_PATH: /data/honeypot.db
+    volumes:
+      - honeypot-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  honeypot-data:

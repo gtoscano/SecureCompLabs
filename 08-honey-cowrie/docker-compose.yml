@@ -1,0 +1,22 @@
+services:
+  cowrie:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-cowrie/cowrie:latest}
+    container_name: cowrie-honeypot
+    restart: unless-stopped
+    ports:
+      - "2222:2222" # Fake SSH service
+      - "2223:2223" # Fake Telnet service
+    volumes:
+      - cowrie-var:/cowrie/cowrie-git/var
+      - ./cowrie.cfg:/cowrie/cowrie-git/etc/cowrie.cfg:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  cowrie-var:

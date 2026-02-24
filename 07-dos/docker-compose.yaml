@@ -1,0 +1,25 @@
+services:
+
+  target:
+    image: nginx:latest
+    container_name: dos_target
+    ports:
+      - "8080:80"
+    networks:
+      - dosnet
+
+  attacker:
+    image: williamyeh/wrk
+    container_name: dos_attacker
+    entrypoint: ["sh", "-c", "while true; do sleep 3600; done"]
+    networks:
+      - dosnet
+
+  monitor:
+    image: nicolaka/netshoot
+    container_name: dos_monitor
+    entrypoint: ["sh", "-c", "while true; do sleep 3600; done"]
+    networks:
+      - dosnet
+networks:
+  dosnet:

@@ -1,0 +1,9 @@
+# Detect common SQLi keyword patterns in HTTP payload
+alert tcp any any -> any 80 (msg:"LAB SQLi keyword attempt"; content:"' OR 1=1"; nocase; sid:1000001; rev:3;)
+
+# Detect requests for common admin panels
+alert tcp any any -> any 80 (msg:"LAB Admin path probe"; content:"/admin"; nocase; sid:1000002; rev:3;)
+
+# Detect suspicious command injection separators in payload.
+# Use \x3b for ';' so Snort rule parsing is not broken by option delimiters.
+alert tcp any any -> any 80 (msg:"LAB Command injection probe"; pcre:"/(\\x3b|\\|\\||&&)/"; sid:1000003; rev:4;)

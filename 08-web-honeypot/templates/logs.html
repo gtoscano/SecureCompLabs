@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Honeypot Logs</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      padding: 20px;
+    }
+    h1 { margin: 0 0 4px; }
+    p { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px;
+      overflow-x: auto;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid #334155;
+      padding: 8px;
+      vertical-align: top;
+    }
+    th { color: var(--accent); }
+    code {
+      color: #a7f3d0;
+      background: var(--panel-2);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Web Honeypot Logs</h1>
+  <p>Last {{ max_rows }} events. Keep token private. Query with <code>/logs?token={{ token }}</code>.</p>
+
+  <section class="stats">
+    <div class="panel">
+      <h2>Top Source IPs</h2>
+      <table>
+        <thead>
+          <tr><th>IP</th><th>Hits</th></tr>
+        </thead>
+        <tbody>
+          {% for row in top_ips %}
+          <tr><td>{{ row.key }}</td><td>{{ row.count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>Top Paths</h2>
+      <table>
+        <thead>
+          <tr><th>Path</th><th>Hits</th></tr>
+        </thead>
+        <tbody>
+          {% for row in top_paths %}
+          <tr><td>{{ row.key }}</td><td>{{ row.count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Recent Events</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>UTC Time</th>
+          <th>IP</th>
+          <th>Method</th>
+          <th>Path</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.id }}</td>
+          <td>{{ row.ts }}</td>
+          <td>{{ row.remote_addr }}</td>
+          <td>{{ row.method }}</td>
+          <td>{{ row.path }}</td>
+          <td>{{ row.status_code }}</td>
+          <td>{{ row.notes }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>
