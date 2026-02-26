@@ -1,0 +1,27 @@
+services:
+  wireguard:
+    image: linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York           # Change to your timezone
+      - SERVERURL=your.domain.com     # ← Set to your server's public IP or domain
+      - SERVERPORT=51820
+      - PEERS=3                       # Number of client configs to generate
+      - PEERDNS=auto                  # Use the container's DNS, or set a custom IP
+      - INTERNAL_SUBNET=10.13.13.0    # VPN subnet (leave default or customize)
+      - ALLOWEDIPS=0.0.0.0/0          # Route all traffic through VPN (full tunnel)
+      - LOG_CONFS=true                # Print peer configs/QR codes to logs on startup
+    volumes:
+      - ./config:/config
+      - /lib/modules:/lib/modules:ro
+    ports:
+      - "51820:51820/udp"
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=0   # Set to 1 to disable IPv6
+    restart: unless-stopped

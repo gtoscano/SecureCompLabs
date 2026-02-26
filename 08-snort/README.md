@@ -6,6 +6,26 @@ This lab includes:
 
 The default mode is **pcap** so you can safely analyze captured traffic in class.
 
+## Snort modes and differences
+
+### General Snort modes
+
+Snort is commonly described with these core operating modes:
+
+- **Sniffer mode**: reads packets and prints them to the console for inspection.
+- **Packet logger mode**: captures packets and writes them to files for later analysis.
+- **NIDS/IDS mode**: inspects traffic against rules and generates alerts on matches.
+- **Inline/IPS mode** (advanced deployments): can actively drop/block traffic, not just alert.
+
+### Lab runtime modes
+
+This lab exposes two practical runtime modes through `.env`:
+
+- **`SNORT_MODE=pcap`**: analyzes an existing capture file (`./pcaps/sample.pcap`) and then exits scan mode.
+- **`SNORT_MODE=live`**: listens on an interface (for example `eth0`) and analyzes traffic as it arrives.
+
+Use `pcap` for repeatable classroom exercises and `live` for real-time traffic observation.
+
 ## Quick start
 
 ```bash
@@ -103,3 +123,33 @@ docker compose up -d
 - Use this lab only in isolated classroom/lab environments.
 - Do not deploy to production networks.
 - Keep `LOG_VIEW_TOKEN` private.
+
+## Check active rules
+
+Use these commands to verify what Snort is using:
+
+1. Enabled (loaded) rules:
+
+```bash
+docker compose exec -T snort snort -T -c /etc/snort/snort.conf
+```
+
+Look for summary lines such as:
+- `3 Snort rules read`
+- `3 detection rules`
+
+2. Rules that actually fired:
+
+```bash
+tail -n 100 logs/alert
+```
+
+Each alert line includes `[gid:sid:rev]`:
+- `sid` = rule ID
+- `rev` = rule revision
+
+3. Quick list of local enabled rule definitions:
+
+```bash
+rg -n '^alert ' rules/local.rules
+```
